@@ -31,6 +31,19 @@ const FIGHTERS = [
     },
 ];
 
+// Let's create some references to boxes we'll always need and will remain constant
+const playerCharacterSelectionSection = $('#player-character-selection-section');
+const opponentSelectionSection = $('#opponent-selection-section');
+const fightingArenaSection = $('#fighting-arena-section');
+const actionMenuSection = $('#action-menu-section');
+const gameWinSection = $('#game-win-section');
+const gameLoseSection = $('#game-lose-section');
+
+const playerCharacterSelectionBox = $('#player-character-selection-box');
+const opponentSelectionBox = $('#opponent-selection-box');
+const attackerAreaBox = $('#attacker-area');
+const defenderAreaBox = $('#defender-area');
+
 // Let's create an object to contain all of the game logic
 const game = {
 
@@ -42,6 +55,7 @@ const game = {
     defeatedOpponents: [],
 
     resetGameData: function(){
+
         // Clear all of the Fighters
         this.currentPlayerCharacter = null;
         this.currentOpponent = null;
@@ -57,7 +71,6 @@ const game = {
         this.resetGameData();
 
         // Create the Fighter HTML elements we'll be using in the game and load them on screen
-        let characterChoiceBox = $('#character-choice-box');
         for (let i = 0; i < FIGHTERS.length; i++) {
 
             let newFighterData = FIGHTERS[i];
@@ -73,25 +86,62 @@ const game = {
                     '</figure>' +
                 '</button>');
 
-            newFighterHTML.on('click', function(){
-                game.choosePlayerCharacter($(this));
-            });
+            // Attach the fighter's stats to its element
             newFighterHTML.attr('data-name', newFighterData.name);
             newFighterHTML.attr('data-healthPoints', newFighterData.healthPoints);
             newFighterHTML.attr('data-attackPower', newFighterData.attackPower);
             newFighterHTML.attr('data-counterAttackPower', newFighterData.counterAttackPower);
 
-            characterChoiceBox.append(newFighterHTML);
+            // Attach a click handler for choosing them as the player character
+            newFighterHTML.on('click', function(){
+                game.choosePlayerCharacter($(this));
+            });
+
+            // Throw the new Fighter at the end of the player character selection box
+            playerCharacterSelectionBox.append(newFighterHTML);
         }
     },
 
     choosePlayerCharacter: function(playerCharacterJObj){
         console.log('Choosing player ' + playerCharacterJObj.attr('data-name'));
+
+        // Keep track of the current player character
+        this.currentPlayerCharacter = playerCharacterJObj;
+
+        // Remove the click event handler from the player character and disable them from being clicked
         playerCharacterJObj.off('click');
+        playerCharacterJObj.prop('disabled', true);
+
+        // Take the chosen player character and throw them into the fighting arena in the attacker area
+        attackerAreaBox.append(this.currentPlayerCharacter);
+
+        // Change the click handlers on the remaining fighters to choosing them as the opponent
+        let remainingFighters = playerCharacterSelectionBox.children();
+        remainingFighters.off('click');
+        remainingFighters.on('click', function(){
+            game.chooseOpponent($(this))
+        });
+
+        // Take the rest of the fighters and throw them into the opponent selection box
+        opponentSelectionBox.append(remainingFighters);
     },
 
-    chooseOpponent: function(oponentJObj){
+    chooseOpponent: function(opponentJObj){
+        console.log('Choosing opponent ' + opponentJObj.attr('data-name'));
 
+        // Keep track of the current opponent
+        this.currentOpponent = opponentJObj;
+
+        // Remove the click event handler from the opponent and disable them from being clicked
+        opponentJObj.off('click');
+        opponentJObj.prop('disabled', true);
+
+        // Take the chosen opponent and throw them into the fighting arena in the defender area
+        defenderAreaBox.append(this.currentOpponent);
+
+        // Disable the remaining fighters for now
+        let remainingFighters = opponentSelectionBox.children();
+        remainingFighters.prop('disabled', true);
     },
 
     chooseAction: function(actionType){
