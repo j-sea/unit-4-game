@@ -4,28 +4,28 @@ const FIGHTERS = [
         name: 'Fighter A',
         healthPoints: 100,
         attackPower: 5,
-        counterAttackPower: 7,
-        imgSrc: 'http://placehold.it/200x200',
-    },
-    {
-        name: 'Fighter B',
-        healthPoints: 130,
-        attackPower: 2,
-        counterAttackPower: 10,
-        imgSrc: 'http://placehold.it/200x200',
-    },
-    {
-        name: 'Fighter C',
-        healthPoints: 110,
-        attackPower: 4,
         counterAttackPower: 8,
         imgSrc: 'http://placehold.it/200x200',
     },
     {
-        name: 'Fighter D',
-        healthPoints: 120,
-        attackPower: 3,
+        name: 'Fighter B',
+        healthPoints: 145,
+        attackPower: 2,
+        counterAttackPower: 11,
+        imgSrc: 'http://placehold.it/200x200',
+    },
+    {
+        name: 'Fighter C',
+        healthPoints: 115,
+        attackPower: 4,
         counterAttackPower: 9,
+        imgSrc: 'http://placehold.it/200x200',
+    },
+    {
+        name: 'Fighter D',
+        healthPoints: 130,
+        attackPower: 3,
+        counterAttackPower: 10,
         imgSrc: 'http://placehold.it/200x200',
     },
 ];
@@ -51,6 +51,8 @@ const defenderAreaBox = $('#defender-area');
 const actionMenuItems = $('#action-menu > li > button');
 const gameWinDefeatedCouch = $('#game-win-section > .defeated-opponents-couch');
 const gameLoseDefeatedCouch = $('#game-lose-section > .defeated-opponents-couch');
+const gameWinRestartGameButton = $('#game-win-section > .restart-game-button');
+const gameLoseRestartGameButton = $('#game-lose-section > .restart-game-button');
 
 // Let's create an object to contain all of the game logic
 const game = {
@@ -178,7 +180,7 @@ const game = {
             this.actionAttack();
         }
     },
-    
+
     actionAttack: function(){
         console.log('Attacking now!');
 
@@ -229,7 +231,7 @@ const game = {
             game.actionCounterAttack();
         }
     },
-    
+
     actionCounterAttack: function(){
         console.log('Counter-Attacking now!');
 
@@ -342,21 +344,14 @@ const game = {
         'fighting-arena-screen': {
             unloadState: function(){
 
-                // Hide our screen as long as we're not going into a pop-up
-                if (game.nextState !== 'game-win-screen' && game.nextState !== 'game-lose-screen') {
+                // Hide the fighting arena screen
+                game.hideSection('fighting-arena-screen');
 
-                    // Hide the fighting arena screen
-                    game.hideSection('fighting-arena-screen');
+                // Hide the action menu screen
+                game.hideSection('action-menu-screen');
 
-                    // Hide the action menu screen
-                    game.hideSection('action-menu-screen');
-                }
-                // If we're going into a pop-up, disable the action menu items
-                else {
-
-                    // Disable the action menu items
-                    actionMenuItems.prop('disabled', true);
-                }
+                // Disable the action menu items
+                actionMenuItems.prop('disabled', true);
 
                 // Remove the click event handlers from the action menu buttons
                 actionMenuItems.off('click');
@@ -401,19 +396,31 @@ const game = {
             },
             loadState: function(){
 
-                // Move the defeated opponents into the defeated couch
+                // If the player defeated some opponents
                 if (game.defeatedOpponents.length !== 0) {
 
+                    // Move the defeated opponents into the defeated couch
                     gameWinDefeatedCouch.text('');
                     for (let i = 0; i < game.defeatedOpponents.length; i++) {
-    
+
                         let currentDefeatedOpponent = game.defeatedOpponents[i];
                         gameWinDefeatedCouch.append(currentDefeatedOpponent);
                     }
                 }
+                // If the player didn't defeat any opponents
                 else {
+
+                    // Show that no opponents had been defeated
                     gameWinDefeatedCouch.text('(none)');
                 }
+
+                // Attach the click event handlers to the restart button
+                gameWinRestartGameButton.on('click', function(){
+                    console.log('handling restart button click event');
+
+                    // Switch back to the start screen
+                    game.switchState('start-screen');
+                });
 
                 // Show the game win screen
                 game.showSection('game-win-screen');
@@ -427,9 +434,10 @@ const game = {
             },
             loadState: function(){
 
-                // Move the defeated opponents into the defeated couch
+                // If the player defeated some opponents
                 if (game.defeatedOpponents.length !== 0) {
 
+                    // Move the defeated opponents into the defeated couch
                     gameLoseDefeatedCouch.text('');
                     for (let i = 0; i < game.defeatedOpponents.length; i++) {
 
@@ -437,9 +445,20 @@ const game = {
                         gameLoseDefeatedCouch.append(currentDefeatedOpponent);
                     }
                 }
+                // If the player didn't defeat any opponents
                 else {
+
+                    // Show that no opponents had been defeated
                     gameLoseDefeatedCouch.text('(none)');
                 }
+
+                // Attach the click event handlers to the restart button
+                gameLoseRestartGameButton.on('click', function(){
+                    console.log('handling restart button click event');
+
+                    // Switch back to the start screen
+                    game.switchState('start-screen');
+                });
 
                 // Show the game lose screen
                 game.showSection('game-lose-screen');
@@ -460,17 +479,19 @@ const game = {
             game.stateObjects[game.currentState].unloadState(); // If the currentState isn't empty, the state object must exist; so no error checking necessary
         }
 
-        // Change the game state to our new state
-        game.currentState = newState;
-
         // Now load the new state as long as it exists
-        if (game.stateObjects.hasOwnProperty(game.currentState)) {
-            console.log(`loading '${game.currentState}' state`);
+        if (game.stateObjects.hasOwnProperty(newState)) {
+            console.log(`loading '${newState}' state`);
 
+            // Change the game state to our new state
+            game.currentState = newState;
+
+            // Load the new state
             game.stateObjects[game.currentState].loadState();
         }
         else {
-            throw `The state '${game.currentState}' does not exist!`;
+            // Raise an exception if the current state doesn't exist since that probably means a typo in the state name occurred when calling the method
+            throw `The state '${newState}' does not exist!`;
         }
 
         // Clear the next state since there isn't one anymore
