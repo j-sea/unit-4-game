@@ -32,13 +32,19 @@ const FIGHTERS = [
 ];
 
 // Let's create some references to boxes we'll always need and will remain constant
-const playerCharacterSelectionSection = $('#player-character-selection-section');
-const opponentSelectionSection = $('#opponent-selection-section');
-const fightingArenaSection = $('#fighting-arena-section');
-const actionMenuSection = $('#action-menu-section');
-const gameWinSection = $('#game-win-section');
-const gameLoseSection = $('#game-lose-section');
+const body = $('body');
 
+const section = {
+    'start-screen': $('#start-section'),
+    'player-character-selection-screen': $('#player-character-selection-section'),
+    'opponent-selection-screen': $('#opponent-selection-section'),
+    'fighting-arena-screen': $('#fighting-arena-section'),
+    'action-menu-screen': $('#action-menu-section'),
+    'game-win-screen': $('#game-win-section'),
+    'game-lose-screen': $('#game-lose-section'),
+};
+
+const startGameButton = $('#start-game-button');
 const playerCharacterSelectionBox = $('#player-character-selection-box');
 const opponentSelectionBox = $('#opponent-selection-box');
 const attackerAreaBox = $('#attacker-area');
@@ -54,18 +60,30 @@ const game = {
     currentOpponent: null,
     defeatedOpponents: [],
 
-    resetGameData: function(){
+    initialize: function(){
+        console.log('initializing the game');
 
+        // Hide all of the sections
+        $('section').css('display', 'none');
+
+        // Switch to the start screen
+        game.switchState('start-screen');
+    },
+
+    resetGameData: function(){
+        console.log('resetting game data');
+        
         // Clear all of the Fighters
         this.currentPlayerCharacter = null;
         this.currentOpponent = null;
         this.defeatedOpponents = [];
-
+        
         // Remove all of the Fighter HTML elements
         $('.fighter').remove();
     },
-
+    
     setupNewGame: function(){
+        console.log('setting up a new game');
 
         // Reset the game data so nothing from our previous game carries over
         this.resetGameData();
@@ -124,6 +142,9 @@ const game = {
 
         // Take the rest of the fighters and throw them into the opponent selection box
         opponentSelectionBox.append(remainingFighters);
+
+        // Switch to the opponent selection screen
+        game.switchState('opponent-selection-screen');
     },
 
     chooseOpponent: function(opponentJObj){
@@ -142,35 +163,116 @@ const game = {
         // Disable the remaining fighters for now
         let remainingFighters = opponentSelectionBox.children();
         remainingFighters.prop('disabled', true);
+
+        // Switch to the fighting arena screen
+        game.switchState('fighting-arena-screen');
     },
 
     chooseAction: function(actionType){
+        console.log('Choosing action ' + actionType);
 
+        if (actionType === 'Attack') {
+            this.actionAttack();
+        }
+        else if (actionType === 'Options') {
+            this.actionAttack();
+        }
     },
+    
+    actionAttack: function(){
+        console.log('Attacking now!');
 
-    actionAttack: function(opponentName){
-
+        
     },
 
     actionOptions: function(){
+        console.log('Opening options!')
+
 
     },
 
-    updateScreen: function(){
+    hideSection(name){
+        console.log(`hiding section '${name}'`);
 
+        // Hide the section
+        section[name].css('display', 'none');
+
+        // Remove the state signifier class (used for styling) from the body
+        body.removeClass(name);
+    },
+
+    showSection(name){
+        console.log(`showing section '${name}'`);
+
+        // Set the state signifier class (used for styling) to the body
+        body.addClass(name);
+
+        // Show the section
+        section[name].css('display', 'block');
     },
 
     stateObjects: {
         'start-screen': {
             unloadState: function(){
 
+                // Let's remove the click handler even though it's not necessary because it will make maintenance more straightforward
+                startGameButton.off('click');
+
+                // Hide the start screen
+                game.hideSection('start-screen');
             },
             loadState: function(){
 
-                console.log('Setting up new game');
-                game.setupNewGame();
+                // Set up an event handler for the start button's click
+                startGameButton.on('click', function(){
+
+                    // Set up a new game
+                    game.setupNewGame();
+
+                    // Now switch into the game
+                    game.switchState('player-character-selection-screen');
+                });
+
+                // Show the start screen
+                game.showSection('start-screen');
             }
-        }
+        },
+        'player-character-selection-screen': {
+            unloadState: function(){
+
+                // Hide the player character selection screen
+                game.hideSection('player-character-selection-screen');
+            },
+            loadState: function(){
+                
+                // Show the player character selection screen
+                game.showSection('player-character-selection-screen');
+            }
+        },
+        'opponent-selection-screen': {
+            unloadState: function(){
+                
+                // Hide the opponent selection screen
+                game.hideSection('opponent-selection-screen');
+            },
+            loadState: function(){
+                
+                // Show the opponent selection screen
+                game.showSection('opponent-selection-screen');
+            }
+        },
+        'fighting-arena-screen': {
+            unloadState: function(){
+                
+                // Hide the fighting arena screen
+                game.hideSection('fighting-arena-screen');
+            },
+            loadState: function(){
+                
+                // Show the fighting arena screen
+                game.showSection('fighting-arena-screen');
+            }
+        },
     },
 
     // Create a method for switching states
@@ -181,13 +283,17 @@ const game = {
 
         // If we have a state loaded already, unload it first
         if (this.currentState !== '') {
+            console.log(`unloading '${this.currentState}' state`);
+
             this.stateObjects[this.currentState].unloadState(); // If the currentState isn't empty, the state object must exist; so no error checking necessary
         }
-
+        
         this.currentState = newState;
-
+        
         // Now load the new state as long as it exists
         if (this.stateObjects.hasOwnProperty(this.currentState)) {
+            console.log(`loading '${this.currentState}' state`);
+
             this.stateObjects[this.currentState].loadState();
         }
         else {
@@ -199,5 +305,5 @@ const game = {
     }
 };
 
-// Load the game
-game.switchState('start-screen');
+// Initialize the game
+game.initialize();
