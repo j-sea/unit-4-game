@@ -39,6 +39,7 @@ const section = {
     'opponent-selection-screen': $('#opponent-selection-section'),
     'fighting-arena-screen': $('#fighting-arena-section'),
     'action-menu-screen': $('#action-menu-section'),
+    'options-menu-screen': $('#options-menu-section'),
     'game-win-screen': $('#game-win-section'),
     'game-lose-screen': $('#game-lose-section'),
 };
@@ -49,6 +50,7 @@ const opponentSelectionBox = $('#opponent-selection-box');
 const attackerAreaBox = $('#attacker-area');
 const defenderAreaBox = $('#defender-area');
 const actionMenuItems = $('#action-menu > li > button');
+const optionsMenuItems = $('#options-menu > li > button');
 const gameWinDefeatedCouch = $('#game-win-section > .defeated-opponents-couch');
 const gameLoseDefeatedCouch = $('#game-lose-section > .defeated-opponents-couch');
 const gameWinRestartGameButton = $('#game-win-section > .restart-game-button');
@@ -179,11 +181,14 @@ const game = {
         else if (actionType === 'Options') {
             this.actionAttack();
         }
+        else {
+            throw `'${actionType}' is not a recognized action type!`;
+        }
     },
-
+    
     actionAttack: function(){
         console.log('Attacking now!');
-
+        
         // Grab the needed data
         let attackPower = parseInt(this.currentPlayerCharacter.attr('data-attackPower'), 10);
         let initialAttackPower = parseInt(this.currentPlayerCharacter.attr('data-initialAP'), 10);
@@ -192,20 +197,20 @@ const game = {
         
         // Apply the attack on the opponent
         opponentHealthPoints = Math.max(opponentHealthPoints - attackPower, 0);
-
+        
         // Increase the player's attack power
         attackPower = attackPower + initialAttackPower;
-
+        
         // Update the game data
         game.currentOpponent.attr('data-healthPoints', opponentHealthPoints);
         game.currentPlayerCharacter.attr('data-attackPower', attackPower);
-
+        
         // Update the screen
         game.currentOpponent.find('.hp').text(`${opponentHealthPoints}/${initialOpponentHP} HP`);
-
+        
         // If we defeated the opponent, clean everything up and return to the opponent selection screen
         if (opponentHealthPoints === 0) {
-
+            
             // Move the opponent to the array for defeated opponents
             game.currentOpponent.detach();
             game.defeatedOpponents.push(game.currentOpponent);
@@ -213,7 +218,7 @@ const game = {
 
             // If we have more opponents, let's select a new one
             if (opponentSelectionBox.children().length !== 0) {
-
+                
                 // Switch back to the opponent selection screen
                 game.switchState('opponent-selection-screen');
             }
@@ -226,14 +231,14 @@ const game = {
         }
         // If we did not defeat the opponent yet, let the opponent counter attack
         else {
-
+            
             // Initiate the opponent's counter attack
             game.actionCounterAttack();
         }
     },
     actionCounterAttack: function(){
         console.log('Counter-Attacking now!');
-
+        
         // Grab the needed data
         let counterAttackPower = parseInt(game.currentOpponent.attr('data-counterAttackPower'), 10);
         let playerHealthPoints = parseInt(game.currentPlayerCharacter.attr('data-healthPoints'), 10);
@@ -244,22 +249,52 @@ const game = {
 
         // Update the game data
         game.currentPlayerCharacter.attr('data-healthPoints', playerHealthPoints);
-
+        
         // Update the screen
         game.currentPlayerCharacter.find('.hp').text(`${playerHealthPoints}/${initialPlayerHP} HP`);
-
+        
         // If we were defeated by the opponent, we lost the game
         if (playerHealthPoints === 0) {
-
+            
             // Switch to the game lose screen
             game.switchState('game-lose-screen');
         }
     },
-
+    
     actionOptions: function(){
         console.log('Opening options!')
-
         
+        // Show the options menu screen
+        game.showSection('options-menu-screen');
+
+        // Disable the action menu items for now
+        actionMenuItems.prop('disabled', true);
+        
+        // Attach click event handlers to the options menu buttons
+        optionsMenuItems.on('click', function(){
+            console.log(`handling click on options menu item '${$(this).attr('data-optionType')}'`);
+
+            let optionType = $(this).attr('data-optionType');
+            if (optionType === 'Restart') {
+
+                // Switch back to the start screen
+                game.switchState('start-screen');
+            }
+            else if (optionType === 'Back') {
+
+                // Re-enable the action menu items
+                actionMenuItems.prop('disabled', false);
+            }
+            else {
+                throw `'${optionType}' is not a recognized option type!`;
+            }
+
+            // Hide the options menu screen
+            game.hideSection('options-menu-screen');
+
+            // Remove the click event handler from the options menu items
+            optionsMenuItems.off('click');
+        })
     },
 
     hideSection(name){
