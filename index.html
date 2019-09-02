@@ -5,21 +5,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>RPG</title>
+    <title>Fighter RPG</title>
 </head>
 
 <body>
     <header>
-        <h1>RPG</h1>
+        <h1>Fighter RPG</h1>
     </header>
     <main>
+        <section id="start-section">
+            <h2>Step into the Fighting Arena!</h2>
+            <button id="start-game-button">
+                Start the tournament!
+            </button>
+            <footer>
+                <p>Click the start button to step into the arena!</p>
+            </footer>
+        </section>
         <section id="player-character-selection-section">
             <h2>Player Character Selection</h2>
             <div id="player-character-selection-box">
 
             </div>
             <footer>
-                Select your fighter by clicking on them!
+                <p>Select your fighter by clicking on them!</p>
             </footer>
         </section>
         <section id="opponent-selection-section">
@@ -44,19 +53,36 @@
             </footer>
         </section>
         <section id="action-menu-section">
+            <h2>Action Menu</h2>
             <ul id="action-menu" role="menu">
-                <li><button role="menuitem">Attack</button></li>
-                <li><button role="menuitem">Options</button></li>
+                <li><button role="menuitem" data-actionType="Attack">Attack</button></li>
+                <li><button role="menuitem" data-actionType="Options">Options</button></li>
             </ul>
             <footer>
                 <p>Select your action by using the menu!</p>
             </footer>
         </section>
+        <section id="options-menu-section">
+            <h2>Options Menu</h2>
+            <ul id="options-menu" role="menu">
+                <li><button role="menuitem" data-optionType="Restart">Forfeit the tournament!</button></li>
+                <li><button role="menuitem" data-optionType="Back">Return to the arena!</button></li>
+            </ul>
+            <footer>
+                <p>Select your options by using the menu!</p>
+            </footer>
+        </section>
         <section id="game-win-section">
-
+            <h2>You win!</h2>
+            <p>You defeated the following opponents!</p>
+            <div class="defeated-opponents-couch">(none)</div>
+            <button class="restart-game-button">Choose a new player character!</button>
         </section>
         <section id="game-lose-section">
-
+            <h2>You lose!</h2>
+            <p>You defeated the following opponents!</p>
+            <div class="defeated-opponents-couch">(none)</div>
+            <button class="restart-game-button">Choose a new player character!</button>
         </section>
     </main>
     <footer>
