@@ -231,7 +231,6 @@ const game = {
             game.actionCounterAttack();
         }
     },
-
     actionCounterAttack: function(){
         console.log('Counter-Attacking now!');
 
